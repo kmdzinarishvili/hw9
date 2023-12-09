@@ -5,7 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.hw9.R
 
-class ActionAdapter(private val dataList: List<ActionItem>) : RecyclerView.Adapter<ActionViewHolder>() {
+class ActionAdapter(private var dataList: List<ActionItem>) : RecyclerView.Adapter<ActionViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ActionViewHolder {
         val itemView = LayoutInflater.from(parent.context)
@@ -24,4 +24,10 @@ class ActionAdapter(private val dataList: List<ActionItem>) : RecyclerView.Adapt
     override fun getItemCount(): Int {
         return dataList.size
     }
+
+    fun updateData(newActions: List<ActionItem>) {
+        dataList = newActions
+        notifyDataSetChanged()
+    }
+
 }

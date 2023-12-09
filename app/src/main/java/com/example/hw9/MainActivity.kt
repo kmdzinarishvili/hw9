@@ -4,39 +4,33 @@ import android.content.Intent
 import android.content.IntentFilter
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.hw9.db_management.DatabaseHelper
 import com.example.hw9.receivers.ActionReceiver
 import com.example.hw9.recycler_view.ActionAdapter
-import com.example.hw9.recycler_view.ActionItem
-import com.example.hw9.recycler_view.ActionViewHolder
-import com.example.hw9.recycler_view.enums.ActionState
-import com.example.hw9.recycler_view.enums.ActionType
-import java.time.LocalDateTime
-
+import com.example.hw9.view_model.ActionViewModel
 class MainActivity : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
-    private lateinit var adapter: RecyclerView.Adapter<ActionViewHolder>
+    private lateinit var adapter: ActionAdapter
     private lateinit var actionReceiver: ActionReceiver
     private lateinit var dbHelper: DatabaseHelper
+    private lateinit var actionViewModel: ActionViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        dbHelper = DatabaseHelper(this)
+        actionViewModel = ViewModelProvider(this)[ActionViewModel::class.java]
 
-        val dataList = listOf(
-            ActionItem(ActionType.SCREEN_STATUS_CHANGE, ActionState.TURNED_OFF, LocalDateTime.now()),
-            ActionItem(ActionType.SCREEN_STATUS_CHANGE, ActionState.TURNED_ON, LocalDateTime.now()),
-            ActionItem(ActionType.CHARGE_STATUS_CHANGE, ActionState.TURNED_OFF, LocalDateTime.now())
-        )
+        val actions = dbHelper.getAllActions()
 
         recyclerView = findViewById(R.id.recyclerView)
-        adapter = ActionAdapter(dataList)
+        adapter = ActionAdapter(actions)
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = adapter
 
-        dbHelper = DatabaseHelper(this)
 
         actionReceiver = ActionReceiver(dbHelper)
         val intentFilter = IntentFilter().apply {
@@ -47,6 +41,9 @@ class MainActivity : AppCompatActivity() {
         }
         registerReceiver(actionReceiver, intentFilter)
 
+        dbHelper.allActions.observe(this) { newActions ->
+            adapter.updateData(newActions)
+        }
 
     }
 }
